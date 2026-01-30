@@ -70,8 +70,8 @@ export const POST: RequestHandler = async ({ request, url }) => {
 					w.length_m
 				FROM pgr_dijkstra(
 					'SELECT gid as id, source, target, cost, reverse_cost FROM ways',
-					$1::bigint,
-					$2::bigint,
+					$1::integer,
+					$2::integer,
 					directed := true
 				) as r
 				LEFT JOIN ways w ON r.edge = w.gid

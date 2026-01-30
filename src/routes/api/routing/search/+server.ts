@@ -139,7 +139,7 @@ export const POST: RequestHandler = async ({ request }) => {
 		};
 
 		const whereClause = buildWhereClause();
-		const whereClauseWithCostMinutes = buildWhereClause('cost_minutes IS NOT NULL');
+		const whereClauseWithCostMinutes = buildWhereClause('cost_s IS NOT NULL');
 
 		// 1. 最短経路検索（距離ベース）
 		const shortestRouteQuery = `
@@ -153,12 +153,12 @@ export const POST: RequestHandler = async ({ request }) => {
 				ST_AsGeoJSON(w.the_geom) as geom,
 				w.name,
 				w.length_m,
-				w.cost_minutes,
+				(w.cost_s / 60.0) as cost_minutes,
 				c.tag_value as road_type
 			FROM pgr_dijkstra(
 				'SELECT gid as id, source, target, length_m as cost, length_m as reverse_cost FROM ways ${whereClause}',
-				$1::bigint,
-				$2::bigint,
+				$1::integer,
+				$2::integer,
 				true
 			) as r
 			LEFT JOIN ways w ON r.edge = w.gid
@@ -178,12 +178,12 @@ export const POST: RequestHandler = async ({ request }) => {
 				ST_AsGeoJSON(w.the_geom) as geom,
 				w.name,
 				w.length_m,
-				w.cost_minutes,
+				(w.cost_s / 60.0) as cost_minutes,
 				c.tag_value as road_type
 			FROM pgr_dijkstra(
-				'SELECT gid as id, source, target, cost_minutes as cost, cost_minutes as reverse_cost FROM ways ${whereClauseWithCostMinutes}',
-				$1::bigint,
-				$2::bigint,
+				'SELECT gid as id, source, target, cost_s as cost, cost_s as reverse_cost FROM ways ${whereClauseWithCostMinutes}',
+				$1::integer,
+				$2::integer,
 				true
 			) as r
 			LEFT JOIN ways w ON r.edge = w.gid
